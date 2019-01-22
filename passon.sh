@@ -50,7 +50,6 @@ locations+=($mounts)
 locations=($(echo ${locations[*]} | sed -e '#Replace spaces with newlines' -e 's/ /\n/g' | awk '!seen[$0]++' -))
 
 # Output locations
-echo "Locations: "
 echo ${locations[@]}
 
 #TODO: Create list of locations that have the .passon folder
