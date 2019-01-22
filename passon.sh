@@ -23,34 +23,34 @@
 # Create list of package/file locations
 # Use script location, ~, /, and extract disks from df
 function getLocationList(){
-# Array that will hold all locations
-locations=(. ~ /)
-
-# Disk types allowed to be extracted from df
-disktypes=(sd hd)
-
-# Stores hardware name, free kilobytes, and mount point of allowed solid state storage (sd or hd, not boot), delimited by spaces
-	# Outputs all mounted locations with df (-P for POSIX Portability)
-	# Uses sed to:
-		# Exclude everything that doesn't begin with /dev/ (we want physical drives)
-		# Exclude everything that isn't a sd or hd
-		# Change spaces into one tab per column
-		# Remove columns we don't need
-		# Remove leading /dev/
-		# Remove everything mentioning boot (we don't want to mess with boot drives (probably))
-drives=$(df -P | sed -e '#Find physical devices' -e '/^\/dev\//!d' -e '#Find allowed physical devices' -e '/^\/dev\/'$(echo "\(${disktypes[*]}\)" | sed -e '#Change space delimiter to escaped bar' -e 's/ /\\|/')'/!d' | sed -e '#Change groups of spaces into tabs for delimiters' -e 's/ \+/\t/g' -e '#Remove useless columns' -e 's/\([^ ]\+\)\t[^ ]\+\t[^ ]\+\t\([^ ]\+\)\t[^ ]\+\t\([^ ]\+\)/\1 \2 \3/' -e '#Remove leading /dev/' -e 's/^\/dev\///' -e '#Remove elements mentioning boot' -e '/boot/d')
-
-# Extract mount points from drives
-mounts=$(echo "$drives" | sed -e '#Extract mount points' -e 's/[^ ]\+ [^ ]\+ \([^ ]\+\)/\1/')
-
-# Append mount points to locations array
-locations+=($mounts)
-
-# Deduplicate locations
-locations=($(echo ${locations[*]} | sed -e '#Replace spaces with newlines' -e 's/ /\n/g' | awk '!seen[$0]++' -))
-
-# Output locations
-echo ${locations[@]}
+	# Array that will hold all locations
+	locations=(. ~ /)
+	
+	# Disk types allowed to be extracted from df
+	disktypes=(sd hd)
+	
+	# Stores hardware name, free kilobytes, and mount point of allowed solid state storage (sd or hd, not boot), delimited by spaces
+		# Outputs all mounted locations with df (-P for POSIX Portability)
+		# Uses sed to:
+			# Exclude everything that doesn't begin with /dev/ (we want physical drives)
+			# Exclude everything that isn't a sd or hd
+			# Change spaces into one tab per column
+			# Remove columns we don't need
+			# Remove leading /dev/
+			# Remove everything mentioning boot (we don't want to mess with boot drives (probably))
+	drives=$(df -P | sed -e '#Find physical devices' -e '/^\/dev\//!d' -e '#Find allowed physical devices' -e '/^\/dev\/'$(echo "\(${disktypes[*]}\)" | sed -e '#Change space delimiter to escaped bar' -e 's/ /\\|/')'/!d' | sed -e '#Change groups of spaces into tabs for delimiters' -e 's/ \+/\t/g' -e '#Remove useless columns' -e 's/\([^ ]\+\)\t[^ ]\+\t[^ ]\+\t\([^ ]\+\)\t[^ ]\+\t\([^ ]\+\)/\1 \2 \3/' -e '#Remove leading /dev/' -e 's/^\/dev\///' -e '#Remove elements mentioning boot' -e '/boot/d')
+	
+	# Extract mount points from drives
+	mounts=$(echo "$drives" | sed -e '#Extract mount points' -e 's/[^ ]\+ [^ ]\+ \([^ ]\+\)/\1/')
+	
+	# Append mount points to locations array
+	locations+=($mounts)
+	
+	# Deduplicate locations
+	locations=($(echo ${locations[*]} | sed -e '#Replace spaces with newlines' -e 's/ /\n/g' | awk '!seen[$0]++' -))
+	
+	# Output locations
+	echo ${locations[@]}
 }
 
 #TODO: Create list of locations that have the .passon folder
