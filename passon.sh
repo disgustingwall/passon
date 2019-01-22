@@ -23,6 +23,13 @@
 # Create list of package/file locations
 # Use script location, ~, /, and extract disks from df
 function getLocationList(){
+	# Declare local variables
+	local locations;
+	local drives;
+	local mounts;
+	# TODO: May be appropriate to be global
+	local allowedDiskTypes
+	
 	# Array that will hold all locations
 	locations=(. ~ /)
 	
