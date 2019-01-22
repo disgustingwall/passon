@@ -22,7 +22,7 @@
 
 # Create list of package/file locations
 # Use script location, ~, /, and extract disks from df
-
+function getLocationList(){
 # Array that will hold all locations
 locations=(. ~ /)
 
@@ -51,6 +51,7 @@ locations=($(echo ${locations[*]} | sed -e '#Replace spaces with newlines' -e 's
 
 # Output locations
 echo ${locations[@]}
+}
 
 #TODO: Create list of locations that have the .passon folder
 	#TODO: Just check each location returned above
