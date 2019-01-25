@@ -48,6 +48,8 @@ function getLocationList(){
 	drives=$( \
 	df -P \
 	| sed \
+	-e '#Remove elements mentioning boot' \
+	-e '/boot/d' \
 	-e '#Find physical devices' \
 	-e '/^\/dev\//!d' \
 	-e '#Find allowed physical devices' \
@@ -58,8 +60,6 @@ function getLocationList(){
 	-e 's/\([^ ]\+\)\t[^ ]\+\t[^ ]\+\t\([^ ]\+\)\t[^ ]\+\t\([^ ]\+\)/\1 \2 \3/' \
 	-e '#Remove leading /dev/' \
 	-e 's/^\/dev\///' \
-	-e '#Remove elements mentioning boot' \
-	-e '/boot/d' \
 	)
 	
 	# Extract mount points from drives
