@@ -51,7 +51,6 @@ function getLocationList(){
 	-e '/^\/dev\//!d' \
 	-e '#Find allowed physical devices' \
 	-e '/^\/dev\/'$(echo "\(${allowedDiskTypes[*]}\)" | sed -e '#Change space delimiter to escaped bar' -e 's/ /\\|/')'/!d' \
-	| sed \
 	-e '#Change groups of spaces into tabs for delimiters' \
 	-e 's/ \+/\t/g' \
 	-e '#Remove useless columns' \
