@@ -45,7 +45,8 @@ function getLocationList(){
 			# Remove columns we don't need
 			# Remove leading /dev/
 			# Remove everything mentioning boot (we don't want to mess with boot drives (probably))
-	drives=$(df -P \
+	drives=$( \
+	df -P \
 	| sed \
 	-e '#Find physical devices' \
 	-e '/^\/dev\//!d' \
@@ -58,7 +59,8 @@ function getLocationList(){
 	-e '#Remove leading /dev/' \
 	-e 's/^\/dev\///' \
 	-e '#Remove elements mentioning boot' \
-	-e '/boot/d')
+	-e '/boot/d' \
+	)
 	
 	# Extract mount points from drives
 	mounts=$(echo "$drives" | sed -e '#Extract mount points' -e 's/[^ ]\+ [^ ]\+ \([^ ]\+\)/\1/')
