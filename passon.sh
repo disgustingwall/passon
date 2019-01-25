@@ -45,13 +45,13 @@ function getLocationList(){
 			# Remove columns we don't need
 			# Remove leading /dev/
 			# Remove everything mentioning boot (we don't want to mess with boot drives (probably))
-	drives=$(df -P | \
-	sed \
+	drives=$(df -P \
+	| sed \
 	-e '#Find physical devices' \
 	-e '/^\/dev\//!d' \
 	-e '#Find allowed physical devices' \
-	-e '/^\/dev\/'$(echo "\(${allowedDiskTypes[*]}\)" | sed -e '#Change space delimiter to escaped bar' -e 's/ /\\|/')'/!d' | \
-	sed \
+	-e '/^\/dev\/'$(echo "\(${allowedDiskTypes[*]}\)" | sed -e '#Change space delimiter to escaped bar' -e 's/ /\\|/')'/!d' \
+	| sed \
 	-e '#Change groups of spaces into tabs for delimiters' \
 	-e 's/ \+/\t/g' \
 	-e '#Remove useless columns' \
