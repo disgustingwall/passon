@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 
 #Please exetuce this script with the correct bash shell
-#The above shebang is for convenience while maintaining a level of security. You should execute the command "bash passon.sh" manually after checking your PATH, or change the shebang to "#!/usr/bin/env bash" if you're feeling risky and efficient
+#The above shebang is for convenience while maintaining a level of security. You should ensure you are running an acceptable bash shell, execute the command "bash passon.sh" manually after checking your PATH, or change the shebang to "#!/usr/bin/env bash" if you're feeling risky and efficient
 
 # A script to expedite the creation of backups between storage devices
 # Creates as many copies of given sets of files to as many devices as possible as quickly as possible
 
 # In this file, sets of files defined in a way that the script understands are called "packages"
+# These will primarily exist as folders with .passon files or .git subfolders
 
 # All data needed by this script will be stored in one folder per duplication location, called .passon
 # All data that could be copied by this script will be located in the "packages" folder
 # Packages will be located in numbered subfolders based on their priority, and subfolders based on the hash of the folder contents
-# Files in package folders will be in a folder called "data"
 # Critical metadata about the package (duplication number, hashes, etc) will be in the root of each package's folder
-# Configuration files (EG minimum storage space allowed) will be stored in a folder called "config"
-# Speed-enhancing metadata (EG packages sorted by number of copies) will be stored in a folder called "metadata". It is mandatory that these files exist, but not that they be up to date. Missing metadata will be re-generated at the beginning of a run. 
+# Required configuration files (EG duplication number) will be stored in a file called ".passon"
+# Speed-enhancing metadata (EG packages sorted by number of copies) will be stored in a file called ".pass". It is mandatory that these files exist, but not that they be up to date. Placeholders for missing metadata will be re-generated at the beginning of a run.
 # Root-level metadata will be timestamped, so it will be safe to unmount the device while it is being updated
 
 # This script is intended for transferring files between removable media with lax permissions (EG FAT flash drives) and the home folder of the current user where there has been time available to prioritize and group files them beforehand but not during copying, EG to transfer files via sneakernet to dead drop locations
@@ -108,4 +108,3 @@ function getLocationList(){
 	#TODO: Do full update of metadata, appending a space and the number of seconds since 1970-01-01 00:00:00 UTC to the filename
 	#TODO: Delete lock file
 	#TODO: Delete old metadata
-#TODO: Create a TUI for creating packages
