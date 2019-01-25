@@ -45,7 +45,21 @@ function getLocationList(){
 			# Remove columns we don't need
 			# Remove leading /dev/
 			# Remove everything mentioning boot (we don't want to mess with boot drives (probably))
-	drives=$(df -P | sed -e '#Find physical devices' -e '/^\/dev\//!d' -e '#Find allowed physical devices' -e '/^\/dev\/'$(echo "\(${allowedDiskTypes[*]}\)" | sed -e '#Change space delimiter to escaped bar' -e 's/ /\\|/')'/!d' | sed -e '#Change groups of spaces into tabs for delimiters' -e 's/ \+/\t/g' -e '#Remove useless columns' -e 's/\([^ ]\+\)\t[^ ]\+\t[^ ]\+\t\([^ ]\+\)\t[^ ]\+\t\([^ ]\+\)/\1 \2 \3/' -e '#Remove leading /dev/' -e 's/^\/dev\///' -e '#Remove elements mentioning boot' -e '/boot/d')
+	drives=$(df -P | \
+	sed \
+	-e '#Find physical devices' \
+	-e '/^\/dev\//!d' \
+	-e '#Find allowed physical devices' \
+	-e '/^\/dev\/'$(echo "\(${allowedDiskTypes[*]}\)" | sed -e '#Change space delimiter to escaped bar' -e 's/ /\\|/')'/!d' | \
+	sed \
+	-e '#Change groups of spaces into tabs for delimiters' \
+	-e 's/ \+/\t/g' \
+	-e '#Remove useless columns' \
+	-e 's/\([^ ]\+\)\t[^ ]\+\t[^ ]\+\t\([^ ]\+\)\t[^ ]\+\t\([^ ]\+\)/\1 \2 \3/' \
+	-e '#Remove leading /dev/' \
+	-e 's/^\/dev\///' \
+	-e '#Remove elements mentioning boot' \
+	-e '/boot/d')
 	
 	# Extract mount points from drives
 	mounts=$(echo "$drives" | sed -e '#Extract mount points' -e 's/[^ ]\+ [^ ]\+ \([^ ]\+\)/\1/')
