@@ -53,7 +53,9 @@ function getLocationList(){
 	-e '#Find physical devices' \
 	-e '/^\/dev\//!d' \
 	-e '#Find allowed physical devices' \
-	-e '/^\/dev\/'$(echo "\(${allowedDiskTypes[*]}\)" | sed -e '#Change space delimiter to escaped bar' -e 's/ /\\|/')'/!d' \
+	-e '/^\/dev\/\(' \
+		$(echo "${allowedDiskTypes[*]}" | sed -e '#Change space delimiter in list to escaped bar' -e 's/ /\\|/') \
+	'\)/!d' \
 	-e '#Change groups of spaces into tabs for delimiters' \
 	-e 's/ \+/\t/g' \
 	-e '#Remove useless columns' \
@@ -74,6 +76,8 @@ function getLocationList(){
 	# Output locations
 	echo ${locations[@]}
 }
+
+getLocationList
 
 #TODO: Create list of locations that have the .passon folder
 	#TODO: Just check each location returned above
