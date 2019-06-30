@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 #Please exetuce this script with the correct bash shell
 #The above shebang is for convenience while maintaining a level of security. You should ensure you are running an acceptable bash shell, execute the command "bash passon.sh" manually after checking your PATH, or change the shebang to "#!/usr/bin/env bash" if you're feeling risky and efficient
@@ -22,7 +22,7 @@
 
 # Create list of package/file locations
 # Use script location, ~, /, and extract disks from df
-function getLocationList(){
+getLocationList(){
 	# Declare local variables
 	local locations;
 	local drives;
@@ -31,10 +31,10 @@ function getLocationList(){
 	local allowedDiskTypes
 	
 	# Array that will hold all locations
-	locations=(. ~ /)
+	locations="~ /"
 	
 	# Disk types allowed to be extracted from df
-	allowedDiskTypes=(sd hd)
+	allowedDiskTypes="sd hd"
 	
 	# Stores hardware name, free kilobytes, and mount point of allowed solid state storage (sd or hd, not boot), delimited by spaces
 		# Outputs all mounted locations with df (-P for POSIX Portability)
@@ -53,9 +53,7 @@ function getLocationList(){
 	-e '#Find physical devices' \
 	-e '/^\/dev\//!d' \
 	-e '#Find allowed physical devices' \
-	-e '/^\/dev\/\(' \
-		$(echo "${allowedDiskTypes[*]}" | sed -e '#Change space delimiter in list to escaped bar' -e 's/ /\\|/') \
-	'\)/!d' \
+	-e '/^\/dev\/\('"$(echo "${allowedDiskTypes}" | sed -e '#Change space delimiter in list to escaped bar' -e 's/ /\\|/')"'\)/!d' \
 	-e '#Change groups of spaces into tabs for delimiters' \
 	-e 's/ \+/\t/g' \
 	-e '#Remove useless columns' \
@@ -68,13 +66,13 @@ function getLocationList(){
 	mounts=$(echo "$drives" | sed -e '#Extract mount points' -e 's/[^ ]\+ [^ ]\+ \([^ ]\+\)/\1/')
 	
 	# Append mount points to locations array
-	locations+=($mounts)
+	locations="$locations"" ""$mounts"
 	
 	# Deduplicate locations
-	locations=($(echo ${locations[*]} | sed -e '#Replace spaces with newlines' -e 's/ /\n/g' | awk '!seen[$0]++' -))
+	locations="$(echo ${locations} | sed -e '#Replace spaces with newlines' -e 's/ /\n/g' | awk '!seen[$0]++')"
 	
 	# Output locations
-	echo ${locations[@]}
+	echo ${locations}
 }
 
 getLocationList
