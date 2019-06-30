@@ -20,32 +20,21 @@
 # This script is intended for transferring files between removable media with lax permissions (EG FAT flash drives) and the home folder of the current user where there has been time available to prioritize and group files them beforehand but not during copying, EG to transfer files via sneakernet to dead drop locations
 
 
-# Create list of package/file locations
-# Use script location, ~, /, and extract disks from df
-getLocationList(){
-	# Declare local variables
-	local locations;
-	local drives;
-	local mounts;
-	# TODO: May be appropriate to be global
-	local allowedDiskTypes
-	
-	# Array that will hold all locations
-	locations="~ /"
-	
-	# Disk types allowed to be extracted from df
-	allowedDiskTypes="sd hd"
-	
-	# Stores hardware name, free kilobytes, and mount point of allowed solid state storage (sd or hd, not boot), delimited by spaces
-		# Outputs all mounted locations with df (-P for POSIX Portability)
-		# Uses sed to:
-			# Exclude everything that doesn't begin with /dev/ (we want physical drives)
-			# Exclude everything that isn't a sd or hd
-			# Change spaces into one tab per column
-			# Remove columns we don't need
-			# Remove leading /dev/
-			# Remove everything mentioning boot (we don't want to mess with boot drives (probably))
-	drives=$( \
+# Disk types allowed to be written to
+allowedDiskTypes="sd hd"
+
+# Finds hardware name, free kilobytes, and mount point of allowed solid state storage (sd and/or hd, not boot), delimited by spaces
+	# Outputs all mounted locations with df (-P for POSIX Portability)
+	# Uses sed to:
+		# Remove everything mentioning boot (we don't want to mess with boot drives (probably))
+		# Exclude everything that doesn't begin with /dev/ (we want physical drives)
+		# Exclude everything that isn't a sd or hd
+		# Change spaces into one tab per column
+		# Remove leading /dev/
+	# Uses awk to:
+		# Remove columns we don't need
+# Use quotes around expression to preserve newlines between each drive
+driveInfo="$( \
 	df -P \
 	| sed \
 	-e '#Remove elements mentioning boot' \
@@ -54,28 +43,29 @@ getLocationList(){
 	-e '/^\/dev\//!d' \
 	-e '#Find allowed physical devices' \
 	-e '/^\/dev\/\('"$(echo "${allowedDiskTypes}" | sed -e '#Change space delimiter in list to escaped bar' -e 's/ /\\|/')"'\)/!d' \
-	-e '#Change groups of spaces into tabs for delimiters' \
-	-e 's/ \+/\t/g' \
-	-e '#Remove useless columns' \
-	-e 's/\([^ ]\+\)\t[^ ]\+\t[^ ]\+\t\([^ ]\+\)\t[^ ]\+\t\([^ ]\+\)/\1 \2 \3/' \
+	-e '#Change groups of spaces into one space for delimiters' \
+	-e 's/ \+/ /g' \
 	-e '#Remove leading /dev/' \
 	-e 's/^\/dev\///' \
-	)
-	
-	# Extract mount points from drives
-	mounts=$(echo "$drives" | sed -e '#Extract mount points' -e 's/[^ ]\+ [^ ]\+ \([^ ]\+\)/\1/')
-	
-	# Append mount points to locations array
-	locations="$locations"" ""$mounts"
-	
-	# Deduplicate locations
-	locations="$(echo ${locations} | sed -e '#Replace spaces with newlines' -e 's/ /\n/g' | awk '!seen[$0]++')"
-	
-	# Output locations
-	echo ${locations}
-}
+	| awk '{ print $1 " " $4 " " $6 }' \
+)"
 
-getLocationList
+# Array of available locations
+# Will be added to shortly
+locations="~
+/"
+
+# Extract mount points from driveInfo
+mounts="$(echo "$driveInfo" | awk '{ print $3 }')"
+
+# Append mount points to locations array
+locations="$locations""
+""$mounts"
+
+# Deduplicate locations
+locations="$(echo "$locations" | awk '!seen[$0]++')"
+
+echo "$locations"
 
 #TODO: Create list of locations that have the .passon folder
 	#TODO: Just check each location returned above
