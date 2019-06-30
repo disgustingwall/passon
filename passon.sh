@@ -1,23 +1,23 @@
 #!/bin/sh
 
-#Please exetuce this script with the correct bash shell
-#The above shebang is for convenience while maintaining a level of security. You should ensure you are running an acceptable bash shell, execute the command "bash passon.sh" manually after checking your PATH, or change the shebang to "#!/usr/bin/env bash" if you're feeling risky and efficient
+#Please exetuce this script with a secure POSIX compliant shell
+#The above shebang is for convenience while maintaining a level of security. You should ensure you are running a shell you trust, specify the entire path of sh, execute the command "sh passon.sh" manually after checking your PATH, or change the shebang to "#!/usr/bin/env sh" if you're unconcerned
 
 # A script to expedite the creation of backups between storage devices
 # Creates as many copies of given sets of files to as many devices as possible as quickly as possible
 
 # In this file, sets of files defined in a way that the script understands are called "packages"
-# These will primarily exist as folders with .passon files or .git subfolders
+# These will primarily exist as passon folders or .git subfolders
 
-# All data needed by this script will be stored in one folder per duplication location, called .passon
+# All data needed by this script will be stored in one folder per duplication location, called passon
 # All data that could be copied by this script will be located in the "packages" folder
 # Packages will be located in numbered subfolders based on their priority, and subfolders based on the hash of the folder contents
 # Critical metadata about the package (duplication number, hashes, etc) will be in the root of each package's folder
-# Required configuration files (EG duplication number) will be stored in a file called ".passon"
-# Speed-enhancing metadata (EG packages sorted by number of copies) will be stored in a file called ".pass". It is mandatory that these files exist, but not that they be up to date. Placeholders for missing metadata will be re-generated at the beginning of a run.
+# Required configuration files (EG duplication number) will be stored in a file
+# Speed-enhancing metadata (EG packages sorted by number of copies) will be stored in seperate file(s). It is mandatory that these files exist, but not that they be up to date. Placeholders for missing metadata will be re-generated at the beginning of a run.
 # Root-level metadata will be timestamped, so it will be safe to unmount the device while it is being updated
 
-# This script is intended for transferring files between removable media with lax permissions (EG FAT flash drives) and the home folder of the current user where there has been time available to prioritize and group files them beforehand but not during copying, EG to transfer files via sneakernet to dead drop locations
+# This script is intended for transferring files between removable media with lax permissions (EG FAT flash drives) and the root of the filesystem or the home folder of the current user where there has been time available to prioritize and group files them beforehand but not during copying, EG to transfer files via sneakernet to dead drop locations
 
 
 # Disk types allowed to be written to
@@ -34,8 +34,8 @@ allowedDiskTypes="sd hd"
 	# Uses awk to:
 		# Remove columns we don't need
 # Use quotes around expression to preserve newlines between each drive
-driveInfo="$( \
-	df -P \
+driveInfo(){
+echo "$(df -P $@ \
 	| sed \
 	-e '#Remove elements mentioning boot' \
 	-e '/boot/d' \
@@ -49,14 +49,14 @@ driveInfo="$( \
 	-e 's/^\/dev\///' \
 	| awk '{ print $1 " " $4 " " $6 }' \
 )"
+}
 
 # Array of available locations
 # Will be added to shortly
-locations="~
-/"
+locations="$(driveInfo "/" "$HOME" | awk '{ print $3 }')"
 
 # Extract mount points from driveInfo
-mounts="$(echo "$driveInfo" | awk '{ print $3 }')"
+mounts="$(echo "$(driveInfo)" | awk '{ print $3 }')"
 
 # Append mount points to locations array
 locations="$locations""
@@ -65,11 +65,27 @@ locations="$locations""
 # Deduplicate locations
 locations="$(echo "$locations" | awk '!seen[$0]++')"
 
-echo "$locations"
 
-#TODO: Create list of locations that have the .passon folder
-	#TODO: Just check each location returned above
-	#TODO: Use "find"
+echo "If you want to run actions as root for more security and deniability, you have sudo access, enter your password now"
+# Test if the user has sudo access
+sudo true
+# $? will be 0 if sudo was successful
+doAsRoot=$?
+
+# Use the user's home folder if there's no sudo access
+if [ ! "$doAsRoot" -eq 0 ]
+then
+locations="$HOME""
+""$locations"
+
+# Create a folder "passon" in each location
+if [ "$doAsRoot" -eq 0 ]
+then
+echo "$locations" | xargs -n 1 -I % sudo mkdir -p %/passon
+else
+echo "$locations" | xargs -n 1 -I % mkdir -p %/passon
+fi
+
 #TODO: Ensure that default folders, files, and metadata exist
 	#TODO: Create default folders
 	#TODO: If default configuration does not exist, copy it from this script
@@ -85,7 +101,7 @@ echo "$locations"
 	#TODO: Do O(remaining storage space) updates on metadata (IE incrementing duplication count inline on each device)
 #TODO: Notify user that all available storage space has been used
 #TODO: Notify user whether all available devices have been marked as copy locations
-#TODO: If one or more devices are not marked with .passon, ask if none, all, or select devices should be marked. Use a noneAllSome function, taking a list of locations and returning a list of responses, to allow the user to select which devices should be marked.
+#TODO: If one or more devices don't have a passon folder, ask if none, all, or select devices should be given one. Use a noneAllSome function, taking a list of locations and returning a list of responses, to allow the user to select which devices should be marked.
 #TODO: If one or more device was selected, simply add a .passion folder and run main program again
 #TODO: Notify user whether low priority packages are preventing priority packages from being copied
 #TODO: Calculate which packages would be deleted per device to allow perfect copying
