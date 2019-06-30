@@ -56,7 +56,7 @@ echo "$(df -P $@ \
 locations="$(driveInfo "/" "$HOME" | awk '{ print $3 }')"
 
 # Extract mount points from driveInfo
-mounts="$(echo "$(driveInfo)" | awk '{ print $3 }')"
+mounts="$(driveInfo | awk '{ print $3 }')"
 
 # Append mount points to locations array
 locations="$locations""
@@ -66,23 +66,22 @@ locations="$locations""
 locations="$(echo "$locations" | awk '!seen[$0]++')"
 
 
-echo "If you want to run actions as root for more security and deniability, you have sudo access, enter your password now"
+echo "If you want to run actions as root for more security and deniability, you have sudo access, enter your password now. Otherwise enter CTRL-D"
 # Test if the user has sudo access
 sudo true
 # $? will be 0 if sudo was successful
 doAsRoot=$?
 
-# Use the user's home folder if there's no sudo access
-if [ ! "$doAsRoot" -eq 0 ]
-then
-locations="$HOME""
-""$locations"
-
 # Create a folder "passon" in each location
 if [ "$doAsRoot" -eq 0 ]
 then
 echo "$locations" | xargs -n 1 -I % sudo mkdir -p %/passon
+# Make root the owner of these folders
+echo "$locations" | xargs -n 1 -I % sudo chown -R 0:0 %/passon
 else
+# Use the user's home folder as well if there's no sudo access
+locations="$HOME""
+""$locations"
 echo "$locations" | xargs -n 1 -I % mkdir -p %/passon
 fi
 
